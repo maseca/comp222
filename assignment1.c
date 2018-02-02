@@ -3,19 +3,17 @@
  * COMP222 Spring 2018
  * Assignment 1
  */
-#include <stdlib.h>
 #include <stdio.h>
 
 void printMenu(void);
 int parseInput(char in);
 void enterParams(void);
-float calculateCPI(void);
-float calculateExecTime(void);
-float calculateMIPS(void);
+float calcExecTime(void);
+float calcMIPS(void);
 
-int numClasses = 0;
-int MHz = 0;
-int* CPIs;
+float MHz = 0; 
+float CPI = 0;
+int I = 0;
 
 int main(){
 	char sel = 'e';
@@ -23,8 +21,11 @@ int main(){
 	while(1){ 
 		printMenu();
 		scanf("%c", &sel);
+		printf("\n");
 		if(parseInput(sel))
 			return 0;
+		getchar();
+		printf("\n");
 	}
 }
 
@@ -47,10 +48,13 @@ int parseInput(char in){
 			enterParams();
 			return 0;
 		case 'b':
+			printf("Average CPI: %.2f\n", CPI); 
 			return 0;
 		case 'c':
+			printf("Total Instruction Time (ms): %.2f\n", calcExecTime());
 			return 0;
 		case 'd':
+			printf("MIPS: %.2f\n", calcMIPS());
 			return 0;
 		case 'e':
 			return 1;
@@ -60,26 +64,35 @@ int parseInput(char in){
 }
 
 void enterParams(void){
-	printf("Enter number of instruction classes: ");
-	scanf("%d", &numClasses);
+	int cpi = 0; 
+	int it = 0;
+	int nc, t1, t2;
 
-	CPIs = malloc(sizeof(int) * numClasses);
+	printf("Enter number of instruction classes: ");
+	scanf("%d", &nc);
 
 	printf("Enter frequency in MHz: ");
-	scanf("%d", &MHz);
+	scanf("%f", &MHz);
 
-	for(int i = 0; i < numClasses; ++i){
-		printf("Enter class #%d instruction count: ", i+1);
-		scanf("%d", &CPIs[i]);
+	for(int i = 0; i < nc; ++i){
+		printf("Enter class #%d CPI: ", i+1);
+		scanf("%d", &t1);
+
+		printf("Enter class #%d instruction count (mil): ", i+1);
+		scanf("%d", &t2);
+
+		cpi += t1 * t2;
+		it += t2;
 	}
-	getchar();
+
+	CPI = (float) cpi / it;
+	I = it;
 }
 
-float calculateCPI(void){
+float calcExecTime(void){
+	return 1000 * I * CPI / MHz;
 }
 
-float calculateExecTime(void){
-}
-
-float calculateMIPS(void){
+float calcMIPS(void){
+	return  MHz / CPI;
 }
