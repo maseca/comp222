@@ -38,7 +38,7 @@ void printMenu(void){
 		"c) Calculate Total Instruction Time\n"
 		"d) Calculate MIPS\n"
 		"e) Quit\n"
-		">"
+		"> "
 	);
 }
 
@@ -59,6 +59,7 @@ int parseInput(char in){
 		case 'e':
 			return 1;
 		default:
+			printf("Invalid Selection.\n");
 			return 0;
 	}
 }
@@ -90,9 +91,9 @@ void enterParams(void){
 }
 
 float calcExecTime(void){
-	return 1000 * I * CPI / MHz;
+	return MHz ? 1000 * I * CPI / MHz : 0;
 }
 
 float calcMIPS(void){
-	return  MHz / CPI;
+	return CPI ? MHz / CPI : 0;
 }
