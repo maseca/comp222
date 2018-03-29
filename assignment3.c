@@ -14,7 +14,9 @@ typedef struct HC {
 } HC;
 
 HC check(char* str) {
+	int len = strlen(str);
 	HC o = {fs: str, bb: -1}; //output
+	printf("%d\n", len);
 	//check code, return bad bit and fixed string
 	return o;
 }
@@ -78,10 +80,12 @@ int main(void) {
 					scanf("%s", c); getchar();
 
 					for(i = 0; i < ml+1; ++i) {
-						if(i == ml)
+						if(i == ml){
 							al = i + 1;
+							c[i] = '\0';
+						}
 
-						if(c[i] != '0' && c[i] != '1'){
+						if(c[i] != '0' && c[i] != '1') {
 							if(c[i] == '\0') {
 								al = i;
 								nv = 0;
