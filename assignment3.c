@@ -13,11 +13,74 @@ typedef struct HC {
 	int bb; //bad bit 
 } HC;
 
-HC check(char* str) {
+char* strrev(char* str) { //adapted from public domain code by Bob Stout
+	char *p1, *p2;
+
+	if (! str || ! *str)
+		return str;
+	for (p1 = str, p2 = str + strlen(str) - 1; p2 > p1; ++p1, --p2) {
+		*p1 ^= *p2;
+		*p2 ^= *p1;
+		*p1 ^= *p2;
+	}
+	return str;
+}
+
+HC check(char* str, char parity) {
+	HC o = {fs: str, bb: 0}; //output
+	int i, j, k, mp_bit, offset;
 	int len = strlen(str);
-	HC o = {fs: str, bb: -1}; //output
-	printf("%d\n", len);
+	int* pb, * pp;
+
+	i = j = k = mp_bit = offset = 0;
+
 	//check code, return bad bit and fixed string
+	for(i = 0; i < len; ++i) {
+		if(str[i] == '1') {
+			mp_bit = (int) (log(len - i) / log(2)) + 1;
+			break;
+		}
+	}
+
+	pb = (int*)calloc(mp_bit, sizeof(int));
+	pp = (int*)calloc(mp_bit, sizeof(int));
+	str = strrev(str);
+
+	for(i = 0; i < mp_bit; ++i) {
+		offset = (int) pow(2, i);
+
+		for(j = offset - 1; j < len; j += (2 * offset)) {
+			for(k = 0; k < offset; ++k) {
+				if(str[j+k] == '\0')
+					break;
+				else if(j+k == offset - 1 && str[j+k] == '1')
+					++(pp[i]);
+				else if(str[j+k] == '1')
+					++(pb[i]);
+			}
+		}
+
+		if(parity == '1')
+			++(pb[i]);
+
+		pb[i] %= 2;
+	}
+
+	for(i = 0; i < mp_bit; ++i) {
+		if(pb[i] != pp[i] && (int) pow(2,i) < len)
+			o.bb += (int) pow(2, i);
+	}
+
+	if(o.bb > 0) {
+		if(str[o.bb - 1] == '1')
+			str[o.bb - 1] = '0';
+		else
+			str[o.bb - 1] = '1';
+	}
+
+	str = strrev(str);
+	free(pb);
+	free(pp);
 	return o;
 }
 
@@ -100,13 +163,13 @@ int main(void) {
 				} while(nv);
 
 				printf("Code: %s\n", c);
-				r = check(c);
+				r = check(c, p);
 
-				if(r.bb == -1) {
+				if(r.bb == 0) {
 					printf("No error detected.\n");
 					break;
 				} else {
-					printf("Error at bit: %d\nCode after correction: %s\n", &r.bb, r.fs);
+					printf("Error at bit: %d\nCode after correction: %s\n", r.bb, r.fs);
 					break;
 				}
 			case 'c':
