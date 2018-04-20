@@ -11,10 +11,49 @@ typedef struct Entry {
 	int pf; //page frame
 } Entry;
 
-void print_mapping(Entry* table, int t_size, int v_addr, int policy) {
+void print_mapping(Entry* table, int t_size, int p_size, int v_addr, int policy) {
+	Entry swp;
+	int vp = v_addr / p_size; //virtual page
+	int pf = table[0].pf;
 	int i;
 
-	//TO-DO: print page address
+	for(i = 0; i < t_size; ++i) {
+		if(table[i].vp == vp) 
+			break;
+	}
+
+	if(i == t_size) {
+		printf("Page fault!\n");
+
+		if(table[t_size-1].vp < 0) {
+			for(i = 0; i < t_size; ++i) {
+				if(table[i].vp < 0) {
+					table[i] = (Entry){vp, i};
+					break;
+				}
+			}
+		} else {
+			for(i = 0; i < t_size-1; ++i)
+				table[i] = table[i+1];
+			
+			table[t_size-1] = (Entry){vp, pf};
+		}
+	} else {
+		printf(
+			"Virtual Address %d => Physical Address %d\n",
+			v_addr,
+			v_addr + p_size * (table[i].pf - vp)
+		);
+
+		if(policy == 0) {//lru reorder
+			while(i < t_size-1) {
+				swp = table[i];
+				table[i] = table[i+1];
+				table[i+1] = swp;
+				++i;
+			}
+		}
+	}
 
 	printf(
 		"---------\n"
@@ -22,11 +61,13 @@ void print_mapping(Entry* table, int t_size, int v_addr, int policy) {
 	);
 
 	for(i = 0; i < t_size; ++i) {
-		printf(
-			"---------\n"
-			"|%3d|%3d|\n",
-			table[i].vp, table[i].pf
-		);
+		if(table[i].vp >= 0) {
+			printf(
+				"---------\n"
+				"|%3d|%3d|\n",
+				table[i].vp, table[i].pf
+			);
+		}
 	}
 
 	printf(
@@ -80,7 +121,7 @@ int main(void) {
 
 				for(i = 0; i < ts; ++i) {
 					t[i].vp = -1;
-					t[i].pf = -1;
+					t[i].pf = i;
 				}
 
 				do {
@@ -109,7 +150,7 @@ int main(void) {
 
 				} while(va < 0);
 
-				print_mapping(t, ts, va, p);
+				print_mapping(t, ts, ps, va, p);
 				break;
 			case 'c':
 			case 'C':
