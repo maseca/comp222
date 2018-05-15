@@ -68,9 +68,9 @@ int main(void) {
 								for(j = i; j < ic+1; ++j)
 									sb[j].delay += 2;
 							} else if((sb[i].src1 == sb[i-2].dst) || (sb[i].src2 == sb[i-2].dst)) {
-								d += 1;
+								d += sb[i-1].delay > sb[i-2].delay ? 0 : 1;
 								for(j = i; j < ic+1; ++j)
-									sb[j].delay += 1;
+									sb[j].delay += sb[i-1].delay > sb[i-2].delay ? 0 : 1;
 							}
 						}
 
